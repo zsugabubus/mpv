@@ -596,7 +596,6 @@ sources += [ebml_defs, ebml_types]
 subdir('common')
 subdir('etc')
 subdir('player/javascript')
-subdir('player/lua')
 subdir('sub')
 
 if darwin
@@ -692,23 +691,25 @@ endif
 lua = dependency('', required: false)
 lua_opt = get_option('lua')
 if lua_opt != 'disabled'
-    lua_version = [['lua', ['>=5.1.0', '<5.3.0']], # generic lua.pc
-                   ['lua52', '>= 5.2.0'],
-                   ['lua5.2', '>= 5.2.0'],
-                   ['lua-5.2', '>= 5.2.0'],
-                   ['luajit', '>= 2.0.0'],
-                   ['lua51', '>= 5.1.0'],
-                   ['lua5.1', '>= 5.1.0'],
-                   ['lua-5.1', '>= 5.1.0']]
+    lua_version = [['lua', ['>=5.1.0', '<5.3.0'], 'luac'], # generic lua.pc
+                   ['lua52', '>= 5.2.0', 'luac5.2'],
+                   ['lua5.2', '>= 5.2.0', 'luac5.2'],
+                   ['lua-5.2', '>= 5.2.0', 'luac5.2'],
+                   ['luajit', '>= 2.0.0', 'luajit'],
+                   ['lua51', '>= 5.1.0', 'luac5.1'],
+                   ['lua5.1', '>= 5.1.0', 'luac5.1'],
+                   ['lua-5.1', '>= 5.1.0', 'luac5.1']]
     foreach version : lua_version
         if lua_opt == 'auto' or lua_opt == 'enabled'
             lua = dependency(version[0], version: version[1], required: false)
             if lua.found()
+                luac_prog = find_program(version[2], required: get_option('luac').enabled())
                 break
             endif
         elif lua_opt == version[0]
             lua = dependency(version[0], version: version[1])
             if lua.found()
+                luac_prog = find_program(version[2], required: get_option('luac').enabled())
                 break
             endif
         endif
@@ -720,6 +721,29 @@ lua_version = lua.name()
 if features['lua']
     dependencies += lua
     sources += files('player/lua.c')
+    features += {
+        'luac': get_option('luac')
+            .disable_if(not luac_prog.found())
+            .allowed(),
+    }
+    features += {
+        'luac-strip': get_option('luac-strip')
+            .disable_auto_if(features['debug'])
+            .disable_if(not features['luac'])
+            .allowed(),
+    }
+    lua2string_gen = generator(
+        find_program(tools_directory / 'lua2string.py'),
+        arguments: [
+            lua_version,
+            features['luac'] ? luac_prog.full_path() : '',
+            features['luac-strip'] ? 'yes' : '',
+            '@INPUT@',
+            '@OUTPUT@',
+        ],
+        output: '@PLAINNAME@.inc',
+    )
+    subdir('player/lua')
 endif
 if not features['lua'] and lua_opt == 'enabled'
      error('Lua enabled but no suitable Lua version could be found!')

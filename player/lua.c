@@ -49,9 +49,14 @@
 #include "client.h"
 #include "libmpv/client.h"
 
+struct module {
+    const char *name;
+    struct bstr source;
+};
+
 // List of builtin modules and their contents as strings.
 // All these are generated from player/lua/*.lua
-static const char * const builtin_lua_scripts[][2] = {
+static const struct module builtin_modules[] = {
     {"mp.defaults",
 #   include "player/lua/defaults.lua.inc"
     },
@@ -85,7 +90,6 @@ static const char * const builtin_lua_scripts[][2] = {
     {"@select.lua",
 #   include "player/lua/select.lua.inc"
     },
-    {0}
 };
 
 // Represents a loaded script. Each has its own Lua state.
@@ -269,10 +273,10 @@ static int load_builtin(lua_State *L)
     const char *name = luaL_checkstring(L, 1);
     char dispname[80];
     snprintf(dispname, sizeof(dispname), "@%s", name);
-    for (int n = 0; builtin_lua_scripts[n][0]; n++) {
-        if (strcmp(name, builtin_lua_scripts[n][0]) == 0) {
-            const char *script = builtin_lua_scripts[n][1];
-            if (luaL_loadbuffer(L, script, strlen(script), dispname))
+    for (size_t n = 0; n < MP_ARRAY_SIZE(builtin_modules); n++) {
+        const struct module *m = &builtin_modules[n];
+        if (strcmp(m->name, name) == 0) {
+            if (luaL_loadbuffer(L, m->source.start, m->source.len, dispname))
                 lua_error(L);
             lua_call(L, 0, 1);
             return 1;
@@ -415,9 +419,9 @@ static int run_lua(lua_State *L)
     assert(lua_type(L, -1) == LUA_TTABLE);
     lua_getfield(L, -1, "preload"); // package preload
     assert(lua_type(L, -1) == LUA_TTABLE);
-    for (int n = 0; builtin_lua_scripts[n][0]; n++) {
+    for (size_t n = 0; n < MP_ARRAY_SIZE(builtin_modules); n++) {
         lua_pushcfunction(L, load_builtin); // package preload load_builtin
-        lua_setfield(L, -2, builtin_lua_scripts[n][0]);
+        lua_setfield(L, -2, builtin_modules[n].name);
     }
     lua_pop(L, 2); // -
 

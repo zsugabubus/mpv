@@ -28,6 +28,8 @@ option('lua',
     value: 'auto',
     description: 'Lua'
 )
+option('luac', type: 'feature', value: 'auto', description: 'embed Lua bytecode')
+option('luac-strip', type: 'feature', value: 'auto', description: 'strip debug info from bytecode')
 option('pthread-debug', type: 'feature', value: 'disabled', description: 'pthread runtime debugging wrappers')
 option('rubberband', type: 'feature', value: 'auto', description: 'librubberband support')
 option('sdl2', type: 'feature', value: 'disabled', description: 'SDL2')
