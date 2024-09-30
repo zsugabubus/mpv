@@ -34,11 +34,16 @@ def cstr(s):
 [_, lua_version, luac_prog, strip, input, output] = sys.argv
 
 if luac_prog:
+    # Precompile Lua to bytecode. We use `string.dump` for LuaJIT because it supports the "strip" parameter,
+    # unlike Lua 5.1 and Lua 5.2 where we must use the CLI to allow stripping.
+    #
+    # We use `string.dump` directly for LuaJIT because "luajit -b" is
+    # handled by "jit.bcsave" module that may not work if user has messed up
+    # her `$LUA_PATH`. Also, checking availability of "-d" (the "d" flag,
+    # deterministic code generation) would require some extra code.
+    #
+    # `string.dump()`
     lua_chunk = subprocess.check_output(
-        # We use `string.dump` directly for LuaJIT because "luajit -b" is
-        # handled by "jit.bcsave" module that may not work if user has messed up
-        # her `$LUA_PATH`. Also, checking availability of "-d" (the "d" flag,
-        # deterministic code generation) would require some extra code.
         [
             luac_prog,
             "-e",
@@ -59,6 +64,7 @@ if luac_prog:
         ]
     )
 else:
+    # Pass through plain text Lua.
     with open(input, "rb") as f:
         lua_chunk = f.read()
 
