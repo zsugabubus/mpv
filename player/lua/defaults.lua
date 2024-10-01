@@ -715,55 +715,75 @@ end
 
 local mp_utils = package.loaded["mp.utils"]
 
-function mp_utils.format_table(t, set)
-    if not set then
-        set = { [t] = true }
-    end
-    local res = "{"
-    -- pretty expensive but simple way to distinguish array and map parts of t
-    local keys = {}
-    local vals = {}
-    local arr = 0
-    for i = 1, #t do
-        if t[i] == nil then
-            break
-        end
-        keys[i] = i
-        vals[i] = t[i]
-        arr = i
-    end
-    for k, v in pairs(t) do
-        if not (type(k) == "number" and k >= 1 and k <= arr and keys[k]) then
-            keys[#keys + 1] = k
-            vals[#keys] = v
-        end
-    end
-    for i = 1, #keys do
-        if #res > 1 then
-            res = res .. ", "
-        end
-        if i > arr then
-            res = res .. mp_utils.to_string(keys[i], set) .. " = "
-        end
-        res = res .. mp_utils.to_string(vals[i], set)
-    end
-    res = res .. "}"
-    return res
-end
+do
+    local display_value
 
-function mp_utils.to_string(v, set)
-    if type(v) == "string" then
-        return "\"" .. v .. "\""
-    elseif type(v) == "table" then
-        if set then
-            if set[v] then
-                return "[cycle]"
+    local function sort_key(a, b)
+        local ak = a[1]
+        local bk = b[1]
+        local an = type(ak) == "number"
+        local bn = type(bk) == "number"
+        if an and bn then
+            local ai = an and ak >= 1 and math.floor(ak) == ak
+            local bi = bn and bk >= 1 and math.floor(bk) == bk
+            if ai ~= bi then
+                return ai
             end
-            set[v] = true
+            return ak < bk
+        elseif an or bn then
+            return an
+        else
+            return a[2] < b[2]
         end
-        return mp_utils.format_table(v, set)
-    else
-        return tostring(v)
+    end
+
+    local function display_key(k, set)
+        if type(k) == "string" and string.find(k, "^[A-Za-z_][A-Za-z_0-9]*$") then
+            return k
+        end
+        return "[" .. display_value(k, set) .. "]"
+    end
+
+    local function display_table(t, set)
+        if set[t] then
+            return "[cycle]"
+        end
+        set[t] = true
+        local s = "{"
+        local xs = {}
+        for k, v in pairs(t) do
+            xs[#xs + 1] = { k, display_key(k, set), display_value(v, set) }
+        end
+        table.sort(xs, sort_key)
+        for i, x in ipairs(xs) do
+            if i > 1 then
+                s = s .. ", "
+            end
+            if x[1] ~= i then
+                s = s .. x[2] .. " = "
+            end
+            s = s .. x[3]
+        end
+        s = s .. "}"
+        return s
+    end
+
+    local function display_string(s)
+        return "\"" .. (s):gsub('["\\]', "\\%1")  .. "\""
+    end
+
+    display_value = function(v, set)
+        if type(v) == "string" then
+            return display_string(v)
+        elseif type(v) == "table" then
+            return display_table(v, set)
+        else
+            return tostring(v)
+        end
+    end
+
+    function mp_utils.to_string(v)
+        return display_value(v, {})
     end
 end
 
