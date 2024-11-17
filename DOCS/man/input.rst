@@ -3044,14 +3044,6 @@ Property list
     ``playlist/N/filename``
         Filename of the Nth entry.
 
-    ``playlist/N/playing``
-        ``yes``/true if the ``playlist-playing-pos`` property points to this
-        entry, ``no``/false or unavailable otherwise.
-
-    ``playlist/N/current``
-        ``yes``/true if the ``playlist-current-pos`` property points to this
-        entry, ``no``/false or unavailable otherwise.
-
     ``playlist/N/title``
         Name of the Nth entry. Available if the playlist file contains
         such fields and mpv's parser supports it for the given
@@ -3078,8 +3070,6 @@ Property list
         MPV_FORMAT_NODE_ARRAY
             MPV_FORMAT_NODE_MAP (for each playlist entry)
                 "filename"  MPV_FORMAT_STRING
-                "current"   MPV_FORMAT_FLAG (might be missing; since mpv 0.7.0)
-                "playing"   MPV_FORMAT_FLAG (same)
                 "title"     MPV_FORMAT_STRING (optional)
                 "id"        MPV_FORMAT_INT64
 
