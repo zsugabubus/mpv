@@ -3232,7 +3232,7 @@ static int mp_property_playlist_current_pos(void *ctx, struct m_property *prop,
     }
     case M_PROPERTY_SET: {
         pl->current = playlist_entry_from_index(pl, *(int *)arg);
-        mp_notify(mpctx, MP_EVENT_CHANGE_PLAYLIST, NULL);
+        mp_notify(mpctx, MP_EVENT_CHANGE_PLAYLIST_POS, NULL);
         return M_PROPERTY_OK;
     }
     case M_PROPERTY_GET_TYPE:
@@ -4320,6 +4320,8 @@ static const char *const *const mp_event_property_change[] = {
     E(MP_EVENT_CHANGE_PLAYLIST, "playlist", "playlist-pos", "playlist-pos-1",
       "playlist-count", "playlist/count", "playlist-current-pos",
       "playlist-playing-pos"),
+    E(MP_EVENT_CHANGE_PLAYLIST_POS, "playlist-pos", "playlist-pos-1",
+      "playlist-current-pos", "playlist-playing-pos"),
     E(MP_EVENT_INPUT_PROCESSED, "mouse-pos", "touch-pos"),
     E(MP_EVENT_CORE_IDLE, "core-idle", "eof-reached"),
 };
