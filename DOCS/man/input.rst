@@ -3031,6 +3031,9 @@ Property list
     the entries. Unavailable if the file was not originally associated with a
     playlist in some way.
 
+``write-playlist-title``
+    Whether it's allowed to automatically set playlist title.
+
 ``playlist``
     Playlist, current entry marked. Currently, the raw property value is
     useless.
@@ -3049,6 +3052,8 @@ Property list
         such fields and mpv's parser supports it for the given
         playlist format, or if the playlist entry has been opened before and a
         media-title other than filename has been acquired.
+
+        If ``write-playlist-title`` is ``no``, then title is not set by mpv.
 
     ``playlist/N/id``
         Unique ID for this entry. This is an automatically assigned integer ID

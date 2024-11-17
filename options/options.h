@@ -304,6 +304,7 @@ typedef struct MPOpts {
     int subs_fallback_forced;
     int audio_display;
     char **display_tags;
+    bool write_playlist_title;
 
     char **audio_files;
     char *demuxer_name;

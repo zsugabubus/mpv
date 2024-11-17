@@ -787,6 +787,7 @@ static const m_option_t mp_opts[] = {
 
     {"title", OPT_STRING(wintitle)},
     {"force-media-title", OPT_STRING(media_title)},
+    {"write-playlist-title", OPT_BOOL(write_playlist_title)},
 
     {"cursor-autohide", OPT_CHOICE(cursor_autohide_delay,
         {"no", -1}, {"always", -2}), M_RANGE(0, 30000)},
@@ -1063,6 +1064,7 @@ static const struct MPOpts mp_default_opts = {
     .screenshot_template = "mpv-shot%n",
     .play_dir = 1,
     .media_controls = 1,
+    .write_playlist_title = true,
     .video_exts = (char *[]){
         "3g2", "3gp", "avi", "flv", "m2ts", "m4v", "mj2", "mkv", "mov", "mp4",
         "mpeg", "mpg", "ogv", "rmvb", "ts", "webm", "wmv", "y4m", NULL
